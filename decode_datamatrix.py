@@ -3,6 +3,8 @@ Data Matrix Decoder - Complete Solution
 Works on Windows 11
 """
 
+import utils.transport
+import utils.session
 from pylibdmtx.pylibdmtx import decode
 from PIL import Image
 import cv2

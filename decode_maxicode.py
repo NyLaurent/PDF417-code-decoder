@@ -1,14 +1,14 @@
 """
-Aztec Code Decoder using pyzbar
-Aztec codes are 2D barcodes used in transport, ticketing, and identification
+MaxiCode Decoder using pyzbar
+MaxiCode is used primarily by UPS for package tracking and logistics
 """
 
 import cv2
 from pyzbar.pyzbar import decode, ZBarSymbol
 import os
 
-def decode_aztec_code(image_path):
-    """Decode Aztec code from image"""
+def decode_maxicode(image_path):
+    """Decode MaxiCode from image"""
     
     # Validate file exists
     if not os.path.exists(image_path):
@@ -16,7 +16,7 @@ def decode_aztec_code(image_path):
         return None
     
     print("="*70)
-    print("AZTEC CODE DECODER")
+    print("MAXICODE DECODER")
     print("="*70)
     print(f"Processing: {image_path}\n")
     
@@ -24,76 +24,73 @@ def decode_aztec_code(image_path):
         # Load image
         image = cv2.imread(image_path)
         
-        # Decode specifically Aztec codes
-        aztec_codes = decode(image, symbols=[ZBarSymbol.AZTEC])
+        # Decode specifically MaxiCode symbols
+        maxicodes = decode(image, symbols=[ZBarSymbol.MAXICODE])
         
-        if not aztec_codes:
-            print("❌ No Aztec code detected!")
+        if not maxicodes:
+            print("❌ No MaxiCode detected!")
             print("\nTips:")
-            print("  - Ensure the bulls-eye center is clearly visible")
-            print("  - Check if the image has good contrast")
-            print("  - Try improving image quality/resolution")
-            print("  - Ensure proper lighting and focus")
+            print("  - Ensure the bull's-eye center pattern is visible")
+            print("  - Check image quality and resolution")
+            print("  - MaxiCode requires good contrast and lighting")
+            print("  - Ensure all hexagonal modules are clear")
             return None
         
-        print(f"✅ Found {len(aztec_codes)} Aztec code(s)\n")
+        print(f"✅ Found {len(maxicodes)} MaxiCode(s)\n")
         
         decoded_data_list = []
         
-        for i, aztec in enumerate(aztec_codes, 1):
+        for i, maxicode in enumerate(maxicodes, 1):
             # Extract data
             try:
-                aztec_data = aztec.data.decode('utf-8')
+                maxicode_data = maxicode.data.decode('utf-8')
             except:
-                aztec_data = str(aztec.data)
+                maxicode_data = str(maxicode.data)
             
-            aztec_type = aztec.type
-            (x, y, w, h) = aztec.rect
+            maxicode_type = maxicode.type
+            (x, y, w, h) = maxicode.rect
             
-            decoded_data_list.append(aztec_data)
+            decoded_data_list.append(maxicode_data)
             
             # Print details
-            print(f"🎯 Aztec Code #{i}")
-            print(f"   Data: {aztec_data}")
-            print(f"   Type: {aztec_type}")
+            print(f"📦 MaxiCode #{i}")
+            print(f"   Data: {maxicode_data}")
+            print(f"   Type: {maxicode_type}")
             print(f"   Position: (x={x}, y={y})")
             print(f"   Size: {w}x{h} pixels")
-            print(f"   Data Length: {len(aztec_data)} characters")
+            print(f"   Data Length: {len(maxicode_data)} characters")
             
-            # Detect content type
-            if aztec_data.startswith('http://') or aztec_data.startswith('https://'):
-                print(f"   Content Type: 🌐 URL")
-            elif '@' in aztec_data and '.' in aztec_data:
-                print(f"   Content Type: 📧 Email/Contact")
-            elif aztec_data.isdigit():
-                print(f"   Content Type: 🔢 Numeric ID")
-            else:
-                print(f"   Content Type: 📝 Text/Data")
+            # Parse structured data (UPS format)
+            if len(maxicode_data) > 20:
+                print(f"\n   📊 MaxiCode Structure:")
+                print(f"      Raw Data: {maxicode_data[:50]}...")
+                # MaxiCode often contains structured shipping data
+                print(f"      (Shipping/Tracking Information)")
             
             print("-" * 70)
             
-            # Draw rectangle around Aztec code
+            # Draw rectangle around MaxiCode
             cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 3)
             
             # Draw polygon outline if available
-            points = aztec.polygon
+            points = maxicode.polygon
             if len(points) >= 4:
                 pts = [(int(p.x), int(p.y)) for p in points]
                 for j in range(len(pts)):
                     cv2.line(image, pts[j], pts[(j+1) % len(pts)], (255, 0, 0), 2)
             
             # Add text label
-            label = f"AZTEC-{i}"
+            label = f"MAXICODE-{i}"
             cv2.putText(image, label, (x, y - 10), 
                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
         
         # Save annotated image
-        output_path = "aztec_code_decoded.png"
+        output_path = "maxicode_decoded.png"
         cv2.imwrite(output_path, image)
         print(f"\n💾 Annotated image saved: {output_path}")
         
         # Display
-        cv2.imshow("Aztec Code Detection", image)
+        cv2.imshow("MaxiCode Detection", image)
         print("\n👁️  Press any key to close the window...")
         cv2.waitKey(0)
         cv2.destroyAllWindows()
@@ -106,10 +103,10 @@ def decode_aztec_code(image_path):
 
 if __name__ == "__main__":
     # Change this to your image path
-    image_file = "aztec-code.png"
+    image_file = "maxicode.png"
     
-    # Decode the Aztec code
-    results = decode_aztec_code(image_file)
+    # Decode the MaxiCode
+    results = decode_maxicode(image_file)
     
     if results:
         print("\n" + "="*70)
